@@ -5,10 +5,16 @@ const modalTitle = document.getElementById("modal-title");
 const form = document.getElementById("application-form");
 const formError = document.getElementById("form-error");
 const applicationIdField = document.getElementById("application-id");
+const deleteModalOverlay = document.getElementById("delete-modal-overlay");
+const deleteTargetName = document.getElementById("delete-target-name");
+let pendingDeleteId = null;
 
 document.getElementById("open-add-modal-btn").addEventListener("click", () => openModal());
 document.getElementById("close-modal-btn").addEventListener("click", closeModal);
 document.getElementById("cancel-btn").addEventListener("click", closeModal);
+document.getElementById("close-delete-modal-btn").addEventListener("click", closeDeleteModal);
+document.getElementById("cancel-delete-btn").addEventListener("click", closeDeleteModal);
+document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
 form.addEventListener("submit", handleFormSubmit);
 
 function openModal(application = null) {
@@ -95,14 +101,27 @@ async function handleFormSubmit(event) {
     }
 }
 
-async function deleteApplication(id) {
-    if (!confirm("Delete this application? This cannot be undone.")) return;
+function openDeleteModal(id, companyName) {
+    pendingDeleteId = id;
+    deleteTargetName.textContent = companyName;
+    deleteModalOverlay.style.display = "flex";
+}
+
+function closeDeleteModal() {
+    pendingDeleteId = null;
+    deleteModalOverlay.style.display = "none";
+}
+
+async function confirmDelete() {
+    if (pendingDeleteId === null) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/applications/${id}`, { method: "DELETE" });
+        const response = await fetch(`${API_BASE_URL}/applications/${pendingDeleteId}`, { method: "DELETE" });
         if (!response.ok) throw new Error("Failed to delete application");
+        closeDeleteModal();
         fetchApplications();
     } catch (error) {
+        closeDeleteModal();
         alert(error.message);
     }
 }
@@ -162,7 +181,10 @@ function renderApplications(applications) {
     });
 
     document.querySelectorAll(".delete-btn").forEach((btn) => {
-        btn.addEventListener("click", () => deleteApplication(Number(btn.dataset.id)));
+        btn.addEventListener("click", () => {
+            const app = applications.find((a) => a.id === Number(btn.dataset.id));
+            openDeleteModal(app.id, app.company_name);
+        });
     });
 }
 
