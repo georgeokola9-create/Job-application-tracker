@@ -141,6 +141,65 @@
         </div>
     </div>
 
+    <div id="view-modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-scroll-area">
+                <div class="modal-header">
+                    <h2 id="view-modal-title">Application Details</h2>
+                    <button id="close-view-modal-btn" class="modal-close" aria-label="Close">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="detail-section">
+                        <h3 class="form-section-title">Basic Details</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Company</span><span id="view-company_name" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Role</span><span id="view-role_title" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Status</span><span id="view-status" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Date Applied</span><span id="view-date_applied" class="detail-value"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3 class="form-section-title">Dates</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Deadline</span><span id="view-application_deadline" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Follow-up Date</span><span id="view-follow_up_date" class="detail-value"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3 class="form-section-title">Contact & Links</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Contact Person</span><span id="view-contact_person" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Contact Email</span><span id="view-contact_email" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Reference Number</span><span id="view-reference_number" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Portal Link</span><span id="view-portal_url" class="detail-value"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3 class="form-section-title">Notes</h3>
+                        <p id="view-notes" class="detail-notes"></p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3 class="form-section-title">Record Info</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item"><span class="detail-label">Created</span><span id="view-created_at" class="detail-value"></span></div>
+                            <div class="detail-item"><span class="detail-label">Last Updated</span><span id="view-updated_at" class="detail-value"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="padding: 0 1.75rem 1.75rem;">
+                    <button id="view-close-btn" class="btn btn-secondary">Close</button>
+                    <button id="view-edit-btn" class="btn btn-primary">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="delete-modal-overlay" class="modal-overlay" style="display: none;">
         <div class="modal modal-small">
             <div class="modal-header">

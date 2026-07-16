@@ -151,6 +151,7 @@ function renderApplications(applications) {
 
     applications.forEach((app) => {
         const row = document.createElement("tr");
+        row.classList.add("clickable-row");
         const portalCell = app.portal_url
             ? `<a href="${app.portal_url}" target="_blank" rel="noopener noreferrer" class="btn btn-portal">Track →</a>`
             : `<span class="empty-value">Not set</span>`;
@@ -180,17 +181,20 @@ function renderApplications(applications) {
             </td>
         `;
         tbody.appendChild(row);
+        row.addEventListener("click", () => openViewModal(app));
     });
 
     document.querySelectorAll(".edit-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (event) => {
+            event.stopPropagation();
             const app = applications.find((a) => a.id === Number(btn.dataset.id));
             openModal(app);
         });
     });
 
     document.querySelectorAll(".delete-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (event) => {
+            event.stopPropagation();
             const app = applications.find((a) => a.id === Number(btn.dataset.id));
             openDeleteModal(app.id, app.company_name);
         });
@@ -254,5 +258,47 @@ function closeAllStatusDropdowns() {
 }
 
 document.addEventListener("click", closeAllStatusDropdowns);
+
+const viewModalOverlay = document.getElementById("view-modal-overlay");
+let currentViewedApplication = null;
+
+document.getElementById("close-view-modal-btn").addEventListener("click", closeViewModal);
+document.getElementById("view-close-btn").addEventListener("click", closeViewModal);
+document.getElementById("view-edit-btn").addEventListener("click", () => {
+    const applicationToEdit = currentViewedApplication;
+    closeViewModal();
+    openModal(applicationToEdit);
+});
+
+function formatDateTime(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return date.toLocaleString();
+}
+
+function openViewModal(application) {
+    currentViewedApplication = application;
+
+    document.getElementById("view-company_name").textContent = application.company_name;
+    document.getElementById("view-role_title").textContent = application.role_title;
+    document.getElementById("view-status").textContent = application.status.replace(/_/g, " ");
+    document.getElementById("view-date_applied").textContent = application.date_applied;
+    document.getElementById("view-application_deadline").textContent = application.application_deadline ?? "Not set";
+    document.getElementById("view-follow_up_date").textContent = application.follow_up_date ?? "Not set";
+    document.getElementById("view-contact_person").textContent = application.contact_person ?? "Not set";
+    document.getElementById("view-contact_email").textContent = application.contact_email ?? "Not set";
+    document.getElementById("view-reference_number").textContent = application.reference_number ?? "Not set";
+    document.getElementById("view-portal_url").textContent = application.portal_url ?? "Not set";
+    document.getElementById("view-notes").textContent = application.notes ?? "No notes added.";
+    document.getElementById("view-created_at").textContent = formatDateTime(application.created_at);
+    document.getElementById("view-updated_at").textContent = formatDateTime(application.updated_at);
+
+    viewModalOverlay.style.display = "flex";
+}
+
+function closeViewModal() {
+    currentViewedApplication = null;
+    viewModalOverlay.style.display = "none";
+}
 
 fetchApplications();
