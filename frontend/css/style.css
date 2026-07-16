@@ -105,10 +105,6 @@ th {
     background: #fafafa;
 }
 
-tbody tr:hover {
-    background-color: #fafbfc;
-}
-
 tbody tr:last-child td {
     border-bottom: none;
 }
@@ -417,4 +413,52 @@ input:focus, select:focus, textarea:focus {
 
 .status-option:hover {
     background-color: var(--color-bg);
+}
+.detail-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detail-section:last-of-type {
+    border-bottom: none;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.detail-value {
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.detail-notes {
+    font-size: 0.9rem;
+    color: var(--color-text);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background-color: var(--color-primary-light);
 }
