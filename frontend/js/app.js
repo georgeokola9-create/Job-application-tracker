@@ -161,7 +161,16 @@ function renderApplications(applications) {
         row.innerHTML = `
             <td>${app.company_name}</td>
             <td>${app.role_title}</td>
-            <td><span class="status-badge status-${app.status}">${app.status.replace(/_/g, " ")}</span></td>
+            <td>
+                <div class="status-selector">
+                    <button class="status-badge status-${app.status} status-trigger" data-id="${app.id}">
+                        ${app.status.replace(/_/g, " ")}
+                    </button>
+                    <div class="status-dropdown" data-dropdown-for="${app.id}">
+                        ${buildStatusOptions(app.status)}
+                    </div>
+                </div>
+            </td>
             <td>${app.date_applied}</td>
             <td>${deadlineCell}</td>
             <td>${portalCell}</td>
@@ -186,6 +195,64 @@ function renderApplications(applications) {
             openDeleteModal(app.id, app.company_name);
         });
     });
+    setupStatusDropdowns();
 }
+const STATUS_OPTIONS = [
+    "applied", "under_review", "interview_scheduled",
+    "interviewed", "offer", "rejected", "withdrawn"
+];
+
+function buildStatusOptions(currentStatus) {
+    return STATUS_OPTIONS
+        .filter((status) => status !== currentStatus)
+        .map((status) => `
+            <button class="status-option status-${status}" data-status="${status}">
+                ${status.replace(/_/g, " ")}
+            </button>
+        `)
+        .join("");
+}
+
+async function updateStatus(applicationId, newStatus) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/applications/${applicationId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus }),
+        });
+        if (!response.ok) throw new Error("Failed to update status");
+        fetchApplications();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function setupStatusDropdowns() {
+    document.querySelectorAll(".status-trigger").forEach((trigger) => {
+        trigger.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const dropdown = document.querySelector(`.status-dropdown[data-dropdown-for="${trigger.dataset.id}"]`);
+            const isOpen = dropdown.classList.contains("open");
+            closeAllStatusDropdowns();
+            if (!isOpen) dropdown.classList.add("open");
+        });
+    });
+
+    document.querySelectorAll(".status-option").forEach((option) => {
+        option.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const dropdown = option.closest(".status-dropdown");
+            const applicationId = dropdown.dataset.dropdownFor;
+            updateStatus(applicationId, option.dataset.status);
+            closeAllStatusDropdowns();
+        });
+    });
+}
+
+function closeAllStatusDropdowns() {
+    document.querySelectorAll(".status-dropdown.open").forEach((d) => d.classList.remove("open"));
+}
+
+document.addEventListener("click", closeAllStatusDropdowns);
 
 fetchApplications();
