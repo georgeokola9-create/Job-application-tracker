@@ -31,6 +31,22 @@ function switchView(view) {
     applyFilters();
 }
 
+function updateSummary() {
+    const total = allApplications.length;
+    const applied = allApplications.filter((a) => a.status === "applied").length;
+    const interviews = allApplications.filter((a) =>
+        a.status === "interview_scheduled" || a.status === "interviewed"
+    ).length;
+    const offers = allApplications.filter((a) => a.status === "offer").length;
+    const rejected = allApplications.filter((a) => a.status === "rejected").length;
+
+    document.getElementById("summary-total").textContent = total;
+    document.getElementById("summary-applied").textContent = applied;
+    document.getElementById("summary-interviews").textContent = interviews;
+    document.getElementById("summary-offers").textContent = offers;
+    document.getElementById("summary-rejected").textContent = rejected;
+}
+
 function applyFilters() {
     const searchTerm = document.getElementById("search-input").value.trim().toLowerCase();
     const statusFilter = document.getElementById("status-filter").value;
@@ -161,6 +177,7 @@ async function fetchApplications() {
         const response = await fetch(`${API_BASE_URL}/applications/`);
         if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
         allApplications = await response.json();
+        updateSummary();
         applyFilters();
     } catch (error) {
         console.error("Failed to fetch applications:", error);
