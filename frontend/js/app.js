@@ -7,6 +7,7 @@ const formError = document.getElementById("form-error");
 const applicationIdField = document.getElementById("application-id");
 const deleteModalOverlay = document.getElementById("delete-modal-overlay");
 const deleteTargetName = document.getElementById("delete-target-name");
+let allApplications = [];
 let pendingDeleteId = null;
 
 document.getElementById("open-add-modal-btn").addEventListener("click", () => openModal());
@@ -15,7 +16,22 @@ document.getElementById("cancel-btn").addEventListener("click", closeModal);
 document.getElementById("close-delete-modal-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("cancel-delete-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
+document.getElementById("search-input").addEventListener("input", applyFilters);
+document.getElementById("status-filter").addEventListener("change", applyFilters);
 form.addEventListener("submit", handleFormSubmit);
+
+function applyFilters() {
+    const searchTerm = document.getElementById("search-input").value.trim().toLowerCase();
+    const statusFilter = document.getElementById("status-filter").value;
+
+    const filtered = allApplications.filter((app) => {
+        const matchesSearch = app.company_name.toLowerCase().includes(searchTerm);
+        const matchesStatus = statusFilter === "" || app.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    renderApplications(filtered);
+}
 
 function openModal(application = null) {
     form.reset();
@@ -130,8 +146,8 @@ async function fetchApplications() {
     try {
         const response = await fetch(`${API_BASE_URL}/applications/`);
         if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
-        const applications = await response.json();
-        renderApplications(applications);
+        allApplications = await response.json();
+        applyFilters();
     } catch (error) {
         console.error("Failed to fetch applications:", error);
     }
