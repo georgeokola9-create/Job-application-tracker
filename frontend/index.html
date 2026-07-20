@@ -22,6 +22,20 @@
 
     <div class="page">
         <main class="card">
+            <div class="filter-bar">
+                <input type="text" id="search-input" placeholder="Search by company..." class="search-input">
+                <select id="status-filter" class="status-filter">
+                    <option value="">All Statuses</option>
+                    <option value="applied">Applied</option>
+                    <option value="under_review">Under Review</option>
+                    <option value="interview_scheduled">Interview Scheduled</option>
+                    <option value="interviewed">Interviewed</option>
+                    <option value="offer">Offer</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="withdrawn">Withdrawn</option>
+                </select>
+            </div>
+
             <table id="applications-table">
                 <thead>
                     <tr>
