@@ -20,7 +20,21 @@ document.getElementById("cancel-delete-btn").addEventListener("click", closeDele
 document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
 document.getElementById("active-view-btn").addEventListener("click", () => switchView("active"));
 document.getElementById("archive-view-btn").addEventListener("click", () => switchView("archive"));
-document.getElementById("search-input").addEventListener("input", applyFilters);
+const searchInput = document.getElementById("search-input");
+const clearSearchBtn = document.getElementById("clear-search-btn");
+
+searchInput.addEventListener("input", () => {
+    clearSearchBtn.style.display = searchInput.value ? "block" : "none";
+    applyFilters();
+});
+
+clearSearchBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    clearSearchBtn.style.display = "none";
+    applyFilters();
+    searchInput.focus();
+});
+
 document.getElementById("status-filter").addEventListener("change", applyFilters);
 form.addEventListener("submit", handleFormSubmit);
 
