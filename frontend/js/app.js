@@ -7,7 +7,9 @@ const formError = document.getElementById("form-error");
 const applicationIdField = document.getElementById("application-id");
 const deleteModalOverlay = document.getElementById("delete-modal-overlay");
 const deleteTargetName = document.getElementById("delete-target-name");
+const ARCHIVE_STATUSES = ["rejected", "withdrawn"];
 let allApplications = [];
+let currentView = "active";
 let pendingDeleteId = null;
 
 document.getElementById("open-add-modal-btn").addEventListener("click", () => openModal());
@@ -16,9 +18,18 @@ document.getElementById("cancel-btn").addEventListener("click", closeModal);
 document.getElementById("close-delete-modal-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("cancel-delete-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
+document.getElementById("active-view-btn").addEventListener("click", () => switchView("active"));
+document.getElementById("archive-view-btn").addEventListener("click", () => switchView("archive"));
 document.getElementById("search-input").addEventListener("input", applyFilters);
 document.getElementById("status-filter").addEventListener("change", applyFilters);
 form.addEventListener("submit", handleFormSubmit);
+
+function switchView(view) {
+    currentView = view;
+    document.getElementById("active-view-btn").classList.toggle("toggle-active", view === "active");
+    document.getElementById("archive-view-btn").classList.toggle("toggle-active", view === "archive");
+    applyFilters();
+}
 
 function applyFilters() {
     const searchTerm = document.getElementById("search-input").value.trim().toLowerCase();
@@ -27,7 +38,10 @@ function applyFilters() {
     const filtered = allApplications.filter((app) => {
         const matchesSearch = app.company_name.toLowerCase().includes(searchTerm);
         const matchesStatus = statusFilter === "" || app.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        const matchesView = currentView === "archive"
+            ? ARCHIVE_STATUSES.includes(app.status)
+            : !ARCHIVE_STATUSES.includes(app.status);
+        return matchesSearch && matchesStatus && matchesView;
     });
 
     renderApplications(filtered);
@@ -160,6 +174,9 @@ function renderApplications(applications) {
     tbody.innerHTML = "";
 
     if (applications.length === 0) {
+        emptyMessage.textContent = currentView === "archive"
+            ? "No rejected or withdrawn applications yet."
+            : "No applications yet. Click + Add Application to get started.";
         emptyMessage.style.display = "block";
         return;
     }
