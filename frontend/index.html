@@ -269,6 +269,32 @@
         </div>
     </div>
 
+    <div id="notifications-page-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-scroll-area">
+                <div class="modal-header">
+                    <h2>All Notifications</h2>
+                    <button id="close-notifications-page-btn" class="modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="filter-bar" style="padding: 0 0 1rem;">
+                        <select id="notification-type-filter" class="status-filter">
+                            <option value="">All Types</option>
+                            <option value="deadline">Deadlines</option>
+                            <option value="followup">Follow-ups</option>
+                        </select>
+                        <select id="notification-sort" class="status-filter">
+                            <option value="urgent">Most Urgent First</option>
+                            <option value="oldest">Oldest Application First</option>
+                            <option value="newest">Most Recent Application First</option>
+                        </select>
+                    </div>
+                    <div id="notifications-page-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/app.js"></script>
 </body>
 </html>
