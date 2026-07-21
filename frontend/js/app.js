@@ -20,12 +20,19 @@ document.getElementById("notification-bell-btn").addEventListener("click", (even
     const dropdown = document.getElementById("notification-dropdown");
     dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 });
-document.getElementById("notification-dropdown").addEventListener("click", (event) => event.stopPropagation());
+document.addEventListener("click", (event) => {
+    if (event.target.id === "view-all-notifications-btn") openNotificationsPage();
+});
 document.getElementById("close-modal-btn").addEventListener("click", closeModal);
 document.getElementById("cancel-btn").addEventListener("click", closeModal);
 document.getElementById("close-delete-modal-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("cancel-delete-btn").addEventListener("click", closeDeleteModal);
 document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
+document.getElementById("close-notifications-page-btn").addEventListener("click", () => {
+    document.getElementById("notifications-page-overlay").style.display = "none";
+});
+document.getElementById("notification-type-filter").addEventListener("change", renderNotificationsPage);
+document.getElementById("notification-sort").addEventListener("change", renderNotificationsPage);
 document.getElementById("active-view-btn").addEventListener("click", () => switchView("active"));
 document.getElementById("archive-view-btn").addEventListener("click", () => switchView("archive"));
 const searchInput = document.getElementById("search-input");
@@ -174,6 +181,77 @@ function renderNotifications() {
         more.textContent = `+ ${remainingCount} more alert${remainingCount > 1 ? "s" : ""}`;
         dropdown.appendChild(more);
     }
+
+    const viewAll = document.createElement("button");
+    viewAll.id = "view-all-notifications-btn";
+    viewAll.className = "view-all-btn";
+    viewAll.type = "button";
+    viewAll.textContent = "View all →";
+    dropdown.appendChild(viewAll);
+}
+
+function openNotificationsPage() {
+    document.getElementById("notification-dropdown").style.display = "none";
+    document.getElementById("notifications-page-overlay").style.display = "flex";
+    renderNotificationsPage();
+}
+
+function getNotificationType(notification) {
+    return notification.title.startsWith("Follow-up") ? "followup" : "deadline";
+}
+
+function renderNotificationsPage() {
+    const typeFilter = document.getElementById("notification-type-filter").value;
+
+    let notifications = computeNotifications().map((n) => ({
+        ...n,
+        type: n.title.startsWith("Follow-up") ? "followup" : "deadline",
+    }));
+
+    if (typeFilter) notifications = notifications.filter((n) => n.type === typeFilter);
+
+    const sortOrder = document.getElementById("notification-sort").value;
+
+    if (sortOrder === "oldest") {
+        notifications.sort((a, b) => new Date(a.application.date_applied) - new Date(b.application.date_applied));
+    } else if (sortOrder === "newest") {
+        notifications.sort((a, b) => new Date(b.application.date_applied) - new Date(a.application.date_applied));
+    }
+
+    const list = document.getElementById("notifications-page-list");
+
+    if (notifications.length === 0) {
+        list.innerHTML = `<div class="notification-empty">No alerts match this filter.</div>`;
+        return;
+    }
+
+    list.innerHTML = notifications
+        .map((n, i) => {
+            const linkHtml = n.application.portal_url
+                ? `<a href="${n.application.portal_url}" target="_blank" rel="noopener noreferrer" class="btn-portal notification-track-link" data-index="${i}" style="flex-shrink:0;">Track →</a>`
+                : "";
+            return `
+                <div class="notification-item notification-clickable notification-item-row" data-index="${i}">
+                    <div class="notification-item-text">
+                        <div class="notification-item-title">${n.title}</div>
+                        <div class="notification-item-detail">${n.detail}</div>
+                    </div>
+                    ${linkHtml}
+                </div>
+            `;
+        })
+        .join("");
+
+    list.querySelectorAll(".notification-clickable").forEach((item) => {
+        item.addEventListener("click", () => {
+            document.getElementById("notifications-page-overlay").style.display = "none";
+            openViewModal(notifications[Number(item.dataset.index)].application);
+        });
+    });
+
+    list.querySelectorAll(".notification-track-link").forEach((link) => {
+        link.addEventListener("click", (e) => e.stopPropagation());
+    });
 }
 
 function applyFilters() {
