@@ -8,11 +8,19 @@ const applicationIdField = document.getElementById("application-id");
 const deleteModalOverlay = document.getElementById("delete-modal-overlay");
 const deleteTargetName = document.getElementById("delete-target-name");
 const ARCHIVE_STATUSES = ["rejected", "withdrawn"];
+const ACTIVE_STATUSES_FOR_ALERTS = ["applied", "under_review", "interview_scheduled", "interviewed"];
+const NOTIFICATION_PREVIEW_LIMIT = 8;
 let allApplications = [];
 let currentView = "active";
 let pendingDeleteId = null;
 
 document.getElementById("open-add-modal-btn").addEventListener("click", () => openModal());
+document.getElementById("notification-bell-btn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    const dropdown = document.getElementById("notification-dropdown");
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+});
+document.getElementById("notification-dropdown").addEventListener("click", (event) => event.stopPropagation());
 document.getElementById("close-modal-btn").addEventListener("click", closeModal);
 document.getElementById("cancel-btn").addEventListener("click", closeModal);
 document.getElementById("close-delete-modal-btn").addEventListener("click", closeDeleteModal);
@@ -59,6 +67,113 @@ function updateSummary() {
     document.getElementById("summary-interviews").textContent = interviews;
     document.getElementById("summary-offers").textContent = offers;
     document.getElementById("summary-rejected").textContent = rejected;
+}
+
+function parseDateOnly(dateString) {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function getDaysUntil(dateString) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = parseDateOnly(dateString);
+    target.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / (1000 * 60 * 60 * 24));
+}
+
+function computeNotifications() {
+    const notifications = [];
+
+    allApplications
+        .filter((app) => ACTIVE_STATUSES_FOR_ALERTS.includes(app.status))
+        .forEach((app) => {
+            if (app.application_deadline) {
+                const daysUntil = getDaysUntil(app.application_deadline);
+                if (daysUntil < 0) {
+                    notifications.push({
+                        application: app,
+                        title: `Deadline passed - ${app.company_name}`,
+                        detail: `Was due ${app.application_deadline}`,
+                        urgency: daysUntil,
+                    });
+                } else if (daysUntil <= 3) {
+                    notifications.push({
+                        application: app,
+                        title: `Deadline approaching - ${app.company_name}`,
+                        detail: daysUntil === 0
+                            ? "Due today"
+                            : `Due in ${daysUntil} day${daysUntil > 1 ? "s" : ""}`,
+                        urgency: daysUntil,
+                    });
+                }
+            }
+
+            if (app.follow_up_date) {
+                const daysUntil = getDaysUntil(app.follow_up_date);
+                if (daysUntil <= 0) {
+                    notifications.push({
+                        application: app,
+                        title: `Follow-up due - ${app.company_name}`,
+                        detail: daysUntil === 0
+                            ? "Due today"
+                            : `Overdue by ${Math.abs(daysUntil)} day${Math.abs(daysUntil) > 1 ? "s" : ""}`,
+                        urgency: daysUntil,
+                    });
+                }
+            }
+        });
+
+    return notifications.sort((a, b) => a.urgency - b.urgency);
+}
+
+function renderNotifications() {
+    const notifications = computeNotifications();
+    const badge = document.getElementById("notification-badge");
+    const dropdown = document.getElementById("notification-dropdown");
+
+    dropdown.innerHTML = "";
+
+    if (notifications.length === 0) {
+        badge.style.display = "none";
+        const emptyState = document.createElement("div");
+        emptyState.className = "notification-empty";
+        emptyState.textContent = "No alerts right now. You're all caught up.";
+        dropdown.appendChild(emptyState);
+        return;
+    }
+
+    badge.textContent = notifications.length;
+    badge.style.display = "flex";
+
+    const visibleNotifications = notifications.slice(0, NOTIFICATION_PREVIEW_LIMIT);
+    const remainingCount = notifications.length - visibleNotifications.length;
+
+    visibleNotifications.forEach((notification) => {
+        const item = document.createElement("button");
+        const title = document.createElement("div");
+        const detail = document.createElement("div");
+
+        item.className = "notification-item";
+        title.className = "notification-item-title";
+        detail.className = "notification-item-detail";
+        title.textContent = notification.title;
+        detail.textContent = notification.detail;
+
+        item.append(title, detail);
+        item.addEventListener("click", () => {
+            dropdown.style.display = "none";
+            openViewModal(notification.application);
+        });
+        dropdown.appendChild(item);
+    });
+
+    if (remainingCount > 0) {
+        const more = document.createElement("div");
+        more.className = "notification-more";
+        more.textContent = `+ ${remainingCount} more alert${remainingCount > 1 ? "s" : ""}`;
+        dropdown.appendChild(more);
+    }
 }
 
 function applyFilters() {
@@ -192,6 +307,7 @@ async function fetchApplications() {
         if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
         allApplications = await response.json();
         updateSummary();
+        renderNotifications();
         applyFilters();
     } catch (error) {
         console.error("Failed to fetch applications:", error);
@@ -322,6 +438,9 @@ function closeAllStatusDropdowns() {
 }
 
 document.addEventListener("click", closeAllStatusDropdowns);
+document.addEventListener("click", () => {
+    document.getElementById("notification-dropdown").style.display = "none";
+});
 
 const viewModalOverlay = document.getElementById("view-modal-overlay");
 let currentViewedApplication = null;

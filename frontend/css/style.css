@@ -72,6 +72,107 @@ body {
     color: var(--color-text-muted);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-wrapper {
+    position: relative;
+}
+
+.bell-btn {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 8px;
+}
+
+.bell-btn:hover {
+    background-color: var(--color-primary-light);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #dc2626;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow), 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 60;
+}
+
+.notification-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: var(--color-bg);
+}
+
+.notification-item-title {
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.15rem;
+}
+
+.notification-item-detail {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+}
+
+.notification-empty {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.notification-more {
+    padding: 0.6rem 1rem;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
 .page {
     max-width: 1100px;
     margin: 0 auto;
