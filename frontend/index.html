@@ -17,6 +17,10 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button id="open-add-modal-btn" class="btn btn-primary">
+                    <span class="btn-full-label">+ Add Application</span>
+                    <span class="btn-icon-only">+</span>
+                </button>
                 <div class="notification-wrapper">
                     <button id="notification-bell-btn" class="bell-btn" aria-label="Notifications">
                         🔔
@@ -24,7 +28,6 @@
                     </button>
                     <div id="notification-dropdown" class="notification-dropdown" style="display: none;"></div>
                 </div>
-                <button id="open-add-modal-btn" class="btn btn-primary">+ Add Application</button>
             </div>
         </div>
     </header>
@@ -63,16 +66,19 @@
                     <input type="text" id="search-input" placeholder="Search by company..." class="search-input">
                     <button id="clear-search-btn" class="clear-search-btn" type="button" aria-label="Clear search" style="display: none;">&times;</button>
                 </div>
-                <select id="status-filter" class="status-filter">
-                    <option value="">All Statuses</option>
-                    <option value="applied">Applied</option>
-                    <option value="under_review">Under Review</option>
-                    <option value="interview_scheduled">Interview Scheduled</option>
-                    <option value="interviewed">Interviewed</option>
-                    <option value="offer">Offer</option>
-                    <option value="rejected">Rejected</option>
-                    <option value="withdrawn">Withdrawn</option>
-                </select>
+                <div class="custom-select" id="status-filter-wrapper">
+                    <button class="custom-select-trigger" id="status-filter-trigger" type="button">All Statuses</button>
+                    <div class="custom-select-options" id="status-filter-options">
+                        <button type="button" data-value="">All Statuses</button>
+                        <button type="button" data-value="applied">Applied</button>
+                        <button type="button" data-value="under_review">Under Review</button>
+                        <button type="button" data-value="interview_scheduled">Interview Scheduled</button>
+                        <button type="button" data-value="interviewed">Interviewed</button>
+                        <button type="button" data-value="offer">Offer</button>
+                        <button type="button" data-value="rejected">Rejected</button>
+                        <button type="button" data-value="withdrawn">Withdrawn</button>
+                    </div>
+                </div>
             </div>
 
             <table id="applications-table">
@@ -278,16 +284,22 @@
                 </div>
                 <div class="modal-body">
                     <div class="filter-bar" style="padding: 0 0 1rem;">
-                        <select id="notification-type-filter" class="status-filter">
-                            <option value="">All Types</option>
-                            <option value="deadline">Deadlines</option>
-                            <option value="followup">Follow-ups</option>
-                        </select>
-                        <select id="notification-sort" class="status-filter">
-                            <option value="urgent">Most Urgent First</option>
-                            <option value="oldest">Oldest Application First</option>
-                            <option value="newest">Most Recent Application First</option>
-                        </select>
+                        <div class="custom-select">
+                            <button class="custom-select-trigger" id="notif-type-trigger" type="button">All Types</button>
+                            <div class="custom-select-options" id="notif-type-options">
+                                <button type="button" data-value="">All Types</button>
+                                <button type="button" data-value="deadline">Deadlines</button>
+                                <button type="button" data-value="followup">Follow-ups</button>
+                            </div>
+                        </div>
+                        <div class="custom-select">
+                            <button class="custom-select-trigger" id="notif-sort-trigger" type="button">Most Urgent First</button>
+                            <div class="custom-select-options" id="notif-sort-options">
+                                <button type="button" data-value="urgent">Most Urgent First</button>
+                                <button type="button" data-value="oldest">Oldest Application First</button>
+                                <button type="button" data-value="newest">Most Recent Application First</button>
+                            </div>
+                        </div>
                     </div>
                     <div id="notifications-page-list"></div>
                 </div>
