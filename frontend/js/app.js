@@ -31,12 +31,15 @@ document.getElementById("confirm-delete-btn").addEventListener("click", confirmD
 document.getElementById("close-notifications-page-btn").addEventListener("click", () => {
     document.getElementById("notifications-page-overlay").style.display = "none";
 });
-document.getElementById("notification-type-filter").addEventListener("change", renderNotificationsPage);
-document.getElementById("notification-sort").addEventListener("change", renderNotificationsPage);
 document.getElementById("active-view-btn").addEventListener("click", () => switchView("active"));
 document.getElementById("archive-view-btn").addEventListener("click", () => switchView("archive"));
 const searchInput = document.getElementById("search-input");
 const clearSearchBtn = document.getElementById("clear-search-btn");
+let selectedStatusFilter = "";
+let selectedNotifType = "";
+let selectedNotifSort = "urgent";
+const statusTrigger = document.getElementById("status-filter-trigger");
+const statusOptions = document.getElementById("status-filter-options");
 
 searchInput.addEventListener("input", () => {
     clearSearchBtn.style.display = searchInput.value ? "block" : "none";
@@ -50,8 +53,50 @@ clearSearchBtn.addEventListener("click", () => {
     searchInput.focus();
 });
 
-document.getElementById("status-filter").addEventListener("change", applyFilters);
+statusTrigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    statusOptions.classList.toggle("open");
+});
+
+statusOptions.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        selectedStatusFilter = btn.dataset.value;
+        statusTrigger.textContent = btn.textContent;
+        statusOptions.classList.remove("open");
+        applyFilters();
+    });
+});
+
+document.addEventListener("click", () => statusOptions.classList.remove("open"));
+setupCustomSelect("notif-type-trigger", "notif-type-options", (val) => {
+    selectedNotifType = val;
+    renderNotificationsPage();
+});
+setupCustomSelect("notif-sort-trigger", "notif-sort-options", (val) => {
+    selectedNotifSort = val;
+    renderNotificationsPage();
+});
+document.addEventListener("click", () => {
+    document.getElementById("notif-type-options").classList.remove("open");
+    document.getElementById("notif-sort-options").classList.remove("open");
+});
 form.addEventListener("submit", handleFormSubmit);
+
+function setupCustomSelect(triggerId, optionsId, onSelect) {
+    const trigger = document.getElementById(triggerId);
+    const options = document.getElementById(optionsId);
+    trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        options.classList.toggle("open");
+    });
+    options.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            trigger.textContent = btn.textContent;
+            options.classList.remove("open");
+            onSelect(btn.dataset.value);
+        });
+    });
+}
 
 function switchView(view) {
     currentView = view;
@@ -74,6 +119,14 @@ function updateSummary() {
     document.getElementById("summary-interviews").textContent = interviews;
     document.getElementById("summary-offers").textContent = offers;
     document.getElementById("summary-rejected").textContent = rejected;
+}
+
+function updateViewToggleCounts() {
+    const activeCount = allApplications.filter((a) => !ARCHIVE_STATUSES.includes(a.status)).length;
+    const archiveCount = allApplications.filter((a) => ARCHIVE_STATUSES.includes(a.status)).length;
+
+    document.getElementById("active-view-btn").textContent = activeCount > 0 ? `Active (${activeCount})` : "Active";
+    document.getElementById("archive-view-btn").textContent = archiveCount > 0 ? `Archive (${archiveCount})` : "Archive";
 }
 
 function parseDateOnly(dateString) {
@@ -201,7 +254,7 @@ function getNotificationType(notification) {
 }
 
 function renderNotificationsPage() {
-    const typeFilter = document.getElementById("notification-type-filter").value;
+    const typeFilter = selectedNotifType;
 
     let notifications = computeNotifications().map((n) => ({
         ...n,
@@ -210,7 +263,7 @@ function renderNotificationsPage() {
 
     if (typeFilter) notifications = notifications.filter((n) => n.type === typeFilter);
 
-    const sortOrder = document.getElementById("notification-sort").value;
+    const sortOrder = selectedNotifSort;
 
     if (sortOrder === "oldest") {
         notifications.sort((a, b) => new Date(a.application.date_applied) - new Date(b.application.date_applied));
@@ -256,7 +309,7 @@ function renderNotificationsPage() {
 
 function applyFilters() {
     const searchTerm = document.getElementById("search-input").value.trim().toLowerCase();
-    const statusFilter = document.getElementById("status-filter").value;
+    const statusFilter = selectedStatusFilter;
 
     const filtered = allApplications.filter((app) => {
         const matchesSearch = app.company_name.toLowerCase().includes(searchTerm);
@@ -386,6 +439,7 @@ async function fetchApplications() {
         allApplications = await response.json();
         updateSummary();
         renderNotifications();
+        updateViewToggleCounts();
         applyFilters();
     } catch (error) {
         console.error("Failed to fetch applications:", error);
@@ -418,9 +472,9 @@ function renderApplications(applications) {
             : `<span class="empty-value">No deadline</span>`;
 
         row.innerHTML = `
-            <td>${app.company_name}</td>
-            <td>${app.role_title}</td>
-            <td>
+            <td data-label="Company">${app.company_name}</td>
+            <td data-label="Role">${app.role_title}</td>
+            <td data-label="Status">
                 <div class="status-selector">
                     <button class="status-badge status-${app.status} status-trigger" data-id="${app.id}">
                         ${app.status.replace(/_/g, " ")}
@@ -430,10 +484,10 @@ function renderApplications(applications) {
                     </div>
                 </div>
             </td>
-            <td>${app.date_applied}</td>
-            <td>${deadlineCell}</td>
-            <td>${portalCell}</td>
-            <td>
+            <td data-label="Date Applied">${app.date_applied}</td>
+            <td data-label="Deadline">${deadlineCell}</td>
+            <td data-label="Portal">${portalCell}</td>
+            <td data-label="Actions">
                 <button class="btn-icon edit-btn" data-id="${app.id}">Edit</button>
                 <button class="btn-icon delete-btn" data-id="${app.id}">Delete</button>
             </td>
