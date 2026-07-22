@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, String, Date, Text, Enum, DateTime
+from sqlalchemy import Column, Integer, String, Date, Text, Enum, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from app.database import Base
 
@@ -27,6 +27,7 @@ class Application(Base):
     __tablename__ = "applications"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     company_name = Column(String, nullable=False)
     role_title = Column(String, nullable=False)
     status = Column(Enum(ApplicationStatus), default=ApplicationStatus.applied, nullable=False)
