@@ -1,8 +1,11 @@
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app import auth, models
 from app.database import SessionLocal
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 def get_db():
@@ -13,14 +16,7 @@ def get_db():
         db.close()
 
 
-def get_current_user(
-    authorization: str = Header(None),
-    db: Session = Depends(get_db),
-):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    token = authorization.split(" ")[1]
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = auth.decode_access_token(token)
         user_id = int(payload.get("sub"))
