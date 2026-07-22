@@ -524,6 +524,11 @@ tbody tr:last-child td:last-child {
     color: var(--color-primary);
 }
 
+#logout-btn {
+    font-size: 1rem;
+    padding: 0.35rem 0.5rem;
+}
+
 /* Status badges */
 .status-badge {
     display: inline-block;

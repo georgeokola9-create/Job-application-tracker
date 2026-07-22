@@ -1,4 +1,80 @@
 const API_BASE_URL = "http://localhost:8000";
+const AUTH_TOKEN_KEY = "jobtracker_token";
+
+function getToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+function setToken(token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+function clearToken() {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+    clearToken();
+    showAuth();
+});
+
+let isRegisterMode = false;
+
+document.getElementById("auth-toggle-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    isRegisterMode = !isRegisterMode;
+    document.getElementById("auth-title").textContent = isRegisterMode ? "Sign Up" : "Log In";
+    document.querySelector("#auth-form button[type=submit]").textContent = isRegisterMode ? "Sign Up" : "Log In";
+    document.getElementById("auth-toggle-text").textContent = isRegisterMode ? "Already have an account?" : "Don't have an account?";
+    document.getElementById("auth-toggle-link").textContent = isRegisterMode ? "Log in" : "Sign up";
+});
+
+document.getElementById("auth-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    const errorBox = document.getElementById("auth-error");
+    errorBox.style.display = "none";
+
+    const endpoint = isRegisterMode ? "register" : "login";
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/${endpoint}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detail || "Something went wrong");
+        }
+
+        const data = await response.json();
+        setToken(data.access_token);
+        showApp();
+    } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.style.display = "block";
+    }
+});
+
+function showApp() {
+    document.getElementById("auth-overlay").style.display = "none";
+    document.getElementById("app-content").style.display = "block";
+    fetchApplications();
+}
+
+function showAuth() {
+    document.getElementById("auth-overlay").style.display = "flex";
+    document.getElementById("app-content").style.display = "none";
+}
+
+if (getToken()) {
+    showApp();
+} else {
+    showAuth();
+}
 
 const modalOverlay = document.getElementById("modal-overlay");
 const modalTitle = document.getElementById("modal-title");
@@ -390,7 +466,10 @@ async function handleFormSubmit(event) {
     try {
         const response = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
             body: JSON.stringify(payload),
         });
 
@@ -422,7 +501,10 @@ async function confirmDelete() {
     if (pendingDeleteId === null) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/applications/${pendingDeleteId}`, { method: "DELETE" });
+        const response = await fetch(`${API_BASE_URL}/applications/${pendingDeleteId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${getToken()}` },
+        });
         if (!response.ok) throw new Error("Failed to delete application");
         closeDeleteModal();
         fetchApplications();
@@ -434,7 +516,9 @@ async function confirmDelete() {
 
 async function fetchApplications() {
     try {
-        const response = await fetch(`${API_BASE_URL}/applications/`);
+        const response = await fetch(`${API_BASE_URL}/applications/`, {
+            headers: { "Authorization": `Bearer ${getToken()}` },
+        });
         if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
         allApplications = await response.json();
         updateSummary();
@@ -533,7 +617,10 @@ async function updateStatus(applicationId, newStatus) {
     try {
         const response = await fetch(`${API_BASE_URL}/applications/${applicationId}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getToken()}`,
+            },
             body: JSON.stringify({ status: newStatus }),
         });
         if (!response.ok) throw new Error("Failed to update status");
@@ -615,5 +702,3 @@ function closeViewModal() {
     currentViewedApplication = null;
     viewModalOverlay.style.display = "none";
 }
-
-fetchApplications();
