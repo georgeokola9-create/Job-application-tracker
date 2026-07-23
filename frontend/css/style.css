@@ -479,6 +479,46 @@ tbody tr:last-child td:last-child {
     transition: background-color 0.15s ease;
 }
 
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: -0.2em;
+}
+
+.spinner-dark {
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-top-color: var(--color-primary);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn.is-loading {
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+.page-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
 .btn-icon-only {
     display: none;
 }
