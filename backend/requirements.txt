@@ -5,3 +5,4 @@ python-dotenv
 python-jose[cryptography]
 bcrypt
 python-multipart
+psycopg2-binary

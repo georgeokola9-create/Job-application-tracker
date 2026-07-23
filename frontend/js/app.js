@@ -13,6 +13,22 @@ function clearToken() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
+function setButtonLoading(button, isLoading, loadingText = "Saving...") {
+    if (!button) return;
+
+    if (isLoading) {
+        button.dataset.originalText = button.textContent;
+        button.innerHTML = `<span class="spinner"></span> ${loadingText}`;
+        button.classList.add("is-loading");
+        button.disabled = true;
+    } else {
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.classList.remove("is-loading");
+        button.disabled = false;
+        delete button.dataset.originalText;
+    }
+}
+
 document.getElementById("logout-btn").addEventListener("click", () => {
     clearToken();
     showAuth();
@@ -34,7 +50,9 @@ document.getElementById("auth-form").addEventListener("submit", async (e) => {
     const email = document.getElementById("auth-email").value.trim();
     const password = document.getElementById("auth-password").value;
     const errorBox = document.getElementById("auth-error");
+    const submitBtn = e.target.querySelector("button[type=submit]");
     errorBox.style.display = "none";
+    setButtonLoading(submitBtn, true, isRegisterMode ? "Signing up..." : "Logging in...");
 
     const endpoint = isRegisterMode ? "register" : "login";
 
@@ -56,6 +74,8 @@ document.getElementById("auth-form").addEventListener("submit", async (e) => {
     } catch (error) {
         errorBox.textContent = error.message;
         errorBox.style.display = "block";
+    } finally {
+        setButtonLoading(submitBtn, false);
     }
 });
 
@@ -454,6 +474,9 @@ async function handleFormSubmit(event) {
     event.preventDefault();
     formError.style.display = "none";
 
+    const submitBtn = form.querySelector("button[type=submit]");
+    setButtonLoading(submitBtn, true, "Saving...");
+
     const payload = buildPayloadFromForm();
     const id = applicationIdField.value;
     const isEditing = id !== "";
@@ -483,6 +506,8 @@ async function handleFormSubmit(event) {
     } catch (error) {
         formError.textContent = error.message;
         formError.style.display = "block";
+    } finally {
+        setButtonLoading(submitBtn, false);
     }
 }
 
@@ -499,6 +524,8 @@ function closeDeleteModal() {
 
 async function confirmDelete() {
     if (pendingDeleteId === null) return;
+    const confirmBtn = document.getElementById("confirm-delete-btn");
+    setButtonLoading(confirmBtn, true, "Deleting...");
 
     try {
         const response = await fetch(`${API_BASE_URL}/applications/${pendingDeleteId}`, {
@@ -511,10 +538,17 @@ async function confirmDelete() {
     } catch (error) {
         closeDeleteModal();
         alert(error.message);
+    } finally {
+        setButtonLoading(confirmBtn, false);
     }
 }
 
 async function fetchApplications() {
+    const tbody = document.getElementById("applications-body");
+    const emptyMessage = document.getElementById("empty-message");
+    emptyMessage.style.display = "none";
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;"><span class="spinner spinner-dark"></span></td></tr>`;
+
     try {
         const response = await fetch(`${API_BASE_URL}/applications/`, {
             headers: { "Authorization": `Bearer ${getToken()}` },
