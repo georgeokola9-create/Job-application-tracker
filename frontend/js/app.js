@@ -648,19 +648,29 @@ function buildStatusOptions(currentStatus) {
 }
 
 async function updateStatus(applicationId, newStatus) {
+    const trigger = document.querySelector(`.status-trigger[data-id="${applicationId}"]`);
+    const originalContent = trigger.innerHTML;
+    trigger.disabled = true;
+    trigger.innerHTML = `<span class="spinner spinner-dark"></span>`;
+
     try {
         const response = await fetch(`${API_BASE_URL}/applications/${applicationId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${getToken()}`,
+                "Authorization": `Bearer ${getToken()}`
             },
-            body: JSON.stringify({ status: newStatus }),
+            body: JSON.stringify({ status: newStatus })
         });
+
         if (!response.ok) throw new Error("Failed to update status");
-        fetchApplications();
+
+        await fetchApplications();
     } catch (error) {
-        alert(error.message);
+        console.error("Failed to update status:", error);
+        trigger.innerHTML = originalContent;
+        trigger.disabled = false;
+        alert("Couldn't update status. Please try again.");
     }
 }
 
@@ -671,7 +681,10 @@ function setupStatusDropdowns() {
             const dropdown = document.querySelector(`.status-dropdown[data-dropdown-for="${trigger.dataset.id}"]`);
             const isOpen = dropdown.classList.contains("open");
             closeAllStatusDropdowns();
-            if (!isOpen) dropdown.classList.add("open");
+            if (!isOpen) {
+                dropdown.classList.add("open");
+                positionDropdown(trigger, dropdown);
+            }
         });
     });
 
@@ -686,11 +699,38 @@ function setupStatusDropdowns() {
     });
 }
 
+function positionDropdown(triggerEl, dropdownEl) {
+    const rect = triggerEl.getBoundingClientRect();
+    dropdownEl.style.visibility = "hidden";
+    dropdownEl.style.top = "0px";
+    dropdownEl.style.bottom = "auto";
+
+    const dropdownWidth = dropdownEl.offsetWidth;
+    let left = rect.right - dropdownWidth;
+    left = Math.max(8, Math.min(left, window.innerWidth - dropdownWidth - 8));
+    dropdownEl.style.left = `${left}px`;
+
+    const dropdownHeight = dropdownEl.offsetHeight;
+
+    const spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < dropdownHeight + 12) {
+        dropdownEl.style.top = `${rect.top - dropdownHeight - 4}px`;
+    } else {
+        dropdownEl.style.top = `${rect.bottom + 4}px`;
+    }
+    dropdownEl.style.visibility = "visible";
+}
+
 function closeAllStatusDropdowns() {
-    document.querySelectorAll(".status-dropdown.open").forEach((d) => d.classList.remove("open"));
+    document.querySelectorAll(".status-dropdown.open").forEach((d) => {
+        d.classList.remove("open");
+        d.style.top = "";
+        d.style.left = "";
+    });
 }
 
 document.addEventListener("click", closeAllStatusDropdowns);
+window.addEventListener("scroll", closeAllStatusDropdowns, true);
 document.addEventListener("click", () => {
     document.getElementById("notification-dropdown").style.display = "none";
 });
