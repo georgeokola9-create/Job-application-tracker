@@ -7,5 +7,3 @@ bcrypt
 python-multipart
 psycopg2-binary
 slowapi
-fastapi-cache2
-jinja2
