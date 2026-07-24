@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Application Tracker</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
 </head>
 <body>
     <div id="auth-overlay" class="modal-overlay" style="display: flex;">
@@ -38,18 +39,22 @@
     <div id="app-content" style="display: none;">
     <header class="site-header">
         <div class="site-header-inner">
-            <div class="brand">
-                <span class="brand-mark">JT</span>
-                <div>
-                    <h1>Job Application Tracker</h1>
-                    <p class="subtitle">Track every application in one place</p>
+            <div class="header-left-group">
+                <div class="brand">
+                    <div class="brand-mark">
+                        <img src="logo.svg" width="40" height="40" alt="Job Application Tracker logo">
+                    </div>
+                    <div>
+                        <h1>Job Application Tracker</h1>
+                        <p class="subtitle">Track every application in one place</p>
+                    </div>
                 </div>
-            </div>
-            <div class="header-actions">
                 <button id="open-add-modal-btn" class="btn btn-primary">
                     <span class="btn-full-label">+ Add Application</span>
                     <span class="btn-icon-only">+</span>
                 </button>
+            </div>
+            <div class="header-right-group">
                 <div class="notification-wrapper">
                     <button id="notification-bell-btn" class="bell-btn" aria-label="Notifications">
                         🔔
