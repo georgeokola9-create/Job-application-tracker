@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://job-application-tracker-api-wtj1.onrender.com";
 const AUTH_TOKEN_KEY = "jobtracker_token";
 
 function getToken() {
