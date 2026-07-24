@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import SessionLocal
 from app import models, schemas
 from app.dependencies import get_current_user
+from app.rate_limit import limiter
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -27,12 +29,16 @@ def create_application(application: schemas.ApplicationCreate, db: Session = Dep
 
 
 @router.get("/", response_model=List[schemas.ApplicationResponse])
-def list_applications(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+@cache(expire=60)
+@limiter.limit("30/minute")
+async def list_applications(request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return db.query(models.Application).filter(models.Application.user_id == current_user.id).all()
 
 
 @router.get("/{application_id}", response_model=schemas.ApplicationResponse)
-def get_application(application_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+@cache(expire=60)
+@limiter.limit("30/minute")
+async def get_application(application_id: int, request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     application = db.query(models.Application).filter(models.Application.id == application_id, models.Application.user_id == current_user.id).first()
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")

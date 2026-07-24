@@ -1,6 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIASGIMiddleware
 from app.database import engine, Base
+from app.rate_limit import limiter
 from app.routes import applications
 from app.routes import auth as auth_routes
 
@@ -8,6 +14,20 @@ Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
+
+# Wire up the rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Enable rate-limiting middleware (so global limits apply)
+app.add_middleware(SlowAPIASGIMiddleware)
+
+
+# Initialise in-memory cache on startup
+@app.on_event("startup")
+async def startup():
+    FastAPICache.init(InMemoryBackend())
+
 
 app.add_middleware(
     CORSMiddleware,
